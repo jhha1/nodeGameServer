@@ -1,2 +1,2 @@
-# node_server_admin
+# node_server
 node 앱 서버
