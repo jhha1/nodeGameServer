@@ -10,7 +10,7 @@ async function initializeAppServer() {
         }
 
         cluster.on('exit', (worker, code, signal) => {
-            console.log(`Worker ${worker.process.pid} died`);
+            logger.info(`Worker ${worker.process.pid} died`);
             // 종료된 워커 프로세스 재생성
             cluster.fork();
         });

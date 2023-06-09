@@ -13,11 +13,9 @@ const initializeWorkerThread = async() => {
         initializer.initializeAppLogger();
         initializer.initializeConst(sharedData[1]);
 
-        console.log(`스레드 ${threadIndex}. ${CONFIG}`);
-
         db.connect();
 
-        console.log(`스레드 ${threadIndex} 초기화 완료`);
+        logger.info(`스레드 ${threadIndex} 초기화 완료`);
 
         // 초기화 작업이 완료되었음을 메인 스레드에 알림
         parentPort.postMessage("initialized");

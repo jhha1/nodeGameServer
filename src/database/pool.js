@@ -17,9 +17,9 @@ function _connectMysql() {
             queueLimit: 0
         });
         dbConnectionPool[ENV] = mysql.createPool(currentConfig);
-        console.log(`${ENV} DB CONNECT`);
+        logger.info(`${ENV} DB CONNECT`);
     } catch (err) {
-        console.log(`${ENV} db 연결 안됨`, err);
+        logger.error(`${ENV} db 연결 안됨`, err);
         throw err;
     }
 }

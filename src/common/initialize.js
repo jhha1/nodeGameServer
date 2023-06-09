@@ -69,13 +69,11 @@ function initializeConst(constTable) {
 }
 
 function initializeAppLogger() {
-    logger.initializeAppLogger();
-    global.logger = logger.logger;
+    global.logger = logger.initializeAppLogger();
 }
 
 function initializeHttpLogger() {
-    logger.initializeHttpLogger();
-    global.httpLogger = logger.httpLogger;
+    global.httpLogger = logger.initializeHttpLogger();
 }
 
 exports.loadConfig = loadConfig;

@@ -1,3 +1,3 @@
-exports.toJson = (responseData) => {
+exports.serialize = (responseData) => {
     return JSON.stringify(responseData);
 }

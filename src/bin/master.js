@@ -48,7 +48,7 @@ const initializeProcess = async() => {
         ];
 
         // 스레드 생성
-        const numWorkers = 2;
+        const numWorkers = 1;
         const workers = [];
         for (let i = 0; i < numWorkers; i++) {
         workers.push(new Promise((resolve, reject) => {
