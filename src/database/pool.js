@@ -1,4 +1,6 @@
 const mysql = require('mysql2/promise');
+const logger = require("../utils/logger");
+const {isMainThread, workerData, parentPort} = require("worker_threads");
 
 const dbConnectionPool = {}; // db 커넥션 Object
 
@@ -11,7 +13,7 @@ function connect() {
 
 function _connectMysql() {
     try {
-        let currentConfig = Object.assign(CONFIG["rdb"][ENV], {
+        let currentConfig = Object.assign(CONFIG["rdb"], {
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0
@@ -25,7 +27,7 @@ function _connectMysql() {
 }
 
 function getConnection() {
-    return dbConnectionPool[ENV].getConnection();;
+    return dbConnectionPool[ENV].getConnection();
 }
 
 exports.connect = connect;

@@ -1,6 +1,7 @@
 const cluster = require('cluster');
 const numCPUs = require('os').cpus().length;
 const master = require('./src/bin/master');
+const logger = require("./src/utils/logger");
 
 async function initializeAppServer() {
     if (cluster.isMaster) {

@@ -3,6 +3,9 @@ const {isMainThread, Worker, workerData, parentPort} = require("worker_threads")
 const bodyParser = require("body-parser");
 const glob = require("glob");
 const morgan = require("morgan");
+const httpLogger = require("../utils/logger").httpLogger;
+const logger = require("../utils/logger");
+const db = require("../database/pool");
 const initializer = require('../common/initialize');
 
 const SERVER_PORT = 8886;
@@ -26,21 +29,22 @@ const initializeProcess = async() => {
 
         initializer.loadConfig();
 
-        const httpLogger = initializer.initializeHttpLogger(app);
         app.use(morgan('combined', { stream: httpLogger }));
         app.use((err, req, res, next) => {
             res.status(err.status || 500);
-            res.render('error', {
-                message: err.message,
-                error: err,
-                title: 'error',
-            });
+            res.json(ResponseUtil.serialize(err));
         });
         
        // await initializer.loadConst();
 
         global.CONST_TABLE = [];
 
+        initializer.initializeConfig(CONFIG);
+        initializer.initializeConst(CONST_TABLE);
+
+        db.connect();
+
+        /*
         // 스레드들 간에 공유할 데이터
         const sharedData = [
             CONFIG,
@@ -59,10 +63,11 @@ const initializeProcess = async() => {
             worker.on("error", reject);
         }));
         }
-        await Promise.all(workers); // 모든 작업자 스레드가 생성될 때까지 기다림
+        await Promise.all(workers); // 모든 작업자 스레드가 생성될 때까지 기다림    
+        */
 
         app.listen(SERVER_PORT, () => {
-            console.log(`Server running on port: ${SERVER_PORT}`);
+            logger.info(`Server running on port: ${SERVER_PORT}`);
         });
     }
 }
