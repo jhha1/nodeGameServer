@@ -1,53 +1,71 @@
 const dbPool = require('./pool');
 
 /**
- * 쿼리 실행
- * @param {String} query 쿼리문
+ * select
+ * @param {String} dbName
+ * @param {String} queries [[q1name : q1], [q2name : q2], ... ] 
  * @returns {Promise}
  */
-async function runQuery(query) {
-    // console.log(query);
-    if (!query) throw new Error("runQuery 매개변수 확인");
-    let conn;
-    try {
-        conn = await dbPool.getConnection();
-    } catch (err) {
-        throw err;
+async function select(dbName, queries) {
+    if (!dbName || !queries || queries.length === 0) {
+        throw `디비조회실패. 매개변수확인. db:${dbName}, queries:${queries}`;
     }
+
+    let ret = Object.fromEntries(queries.map(q => [q[0], []]));
+    let queryString = queries.map(q => q[1]).join("\n");
+    
+    let conn = null;
     try {
-        const [rows, fields] = await conn.query(query);
-        return rows;
+        conn = await dbPool.getConnection(dbName);
+        const [results, fields] = await conn.query(queryString);
+        conn.release();
+        conn = null;
+
+        for (let i = 0; i < results.length; i++) {
+            ret[queries[i][0]] = results[i];
+        }
+
+        return ret;
+
     } catch (err) {
         throw err;
     } finally {
-        conn.release();
-    }
-}
-
-/**
- * 트랜잭션 실행
- * @param {String} query 쿼리문
- */
-async function runTransaction(query) {
-    if (query.length > 0) {
-        let conn;
-        try {
-            conn = await dbPool.getConnection();
-        } catch (err) {
-            throw err;
-        }
-        conn.beginTransaction();
-        try {
-            const [rows, fields] = await conn.query(query);
-            conn.commit();
-        } catch (err) {
-            conn.rollback();
-            throw err;
-        } finally {
+        if (conn != null) {
             conn.release();
         }
     }
 }
 
-exports.runQuery = runQuery;
-exports.runTransaction = runTransaction;
+/**
+ */
+async function transaction(dbName, queries) {
+    if (!dbName || !queries || queries.length === 0) {
+        throw `디비트랜젝션실패. 매개변수확인. db:${dbName}, queries:${queries}`;
+    }
+
+    const queryString = queries.map(q => q).join("\n");
+
+    let conn = null;
+    try {
+        conn = await dbPool.getConnection(dbName);
+        await conn.beginTransaction();
+
+        let results = await conn.query(queryString);
+        await conn.commit();
+
+        return results;
+    } catch (err) {
+        if (conn !== null) {
+            await conn.rollback();
+        }
+        console.error(queryString);
+        throw err;
+    } finally {
+        if (conn != null) {
+            conn.release();
+        }
+    }
+}
+
+exports.select = select;
+exports.transaction = transaction;

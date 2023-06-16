@@ -8,10 +8,14 @@ class AccountService {
 
     async Login() {
         try {
-
-            let result = await db.runQuery(queries.selectByPlatformId(this.platformId));
-            let a = 0;
+            let { AccountRow } = await db.select('auth', [["AccountRow", queries.selectByPlatformId(this.platformId)]]);
+            if (AccountRow.length === 0) {
+                await db.transaction('auth', [queries.insert('aos', this.platformId, 'userId_01', 'deviceId_01', 1)]);
+            }
             
+            let { NewAccountRow } = await db.select('auth', [["NewAccountRow", queries.selectByPlatformId(this.platformId)]]);
+
+            return NewAccountRow;
         }
         catch (err) {
             throw err;

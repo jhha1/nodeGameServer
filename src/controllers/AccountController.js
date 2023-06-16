@@ -7,9 +7,9 @@ exports.Login = async (req, res, cb) => {
         let { platformId } = req.body;
         
         let AccountObject = new AccountService(platformId);
-        await AccountObject.Login();
+        let result = await AccountObject.Login();
 
-        return res.json(ResponseUtil.serialize('1'));
+        return res.json(ResponseUtil.serialize(result));
 
     } catch (err) {
         logger.error(err);

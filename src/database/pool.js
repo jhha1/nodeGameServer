@@ -1,8 +1,9 @@
 const mysql = require('mysql2/promise');
 const logger = require("../utils/logger");
-const {isMainThread, workerData, parentPort} = require("worker_threads");
+const _ = require("lodash");
 
-const dbConnectionPool = {}; // db 커넥션 Object
+const dbAuthConnectionPool = []; 
+const dbGameConnectionPool = [];
 
 /**
  * 앱 부팅 시 DB 연결
@@ -13,21 +14,41 @@ function connect() {
 
 function _connectMysql() {
     try {
-        let currentConfig = Object.assign(CONFIG["rdb"], {
-            waitForConnections: true,
-            connectionLimit: 10,
-            queueLimit: 0
-        });
-        dbConnectionPool[ENV] = mysql.createPool(currentConfig);
-        logger.info(`${ENV} DB CONNECT`);
+        _connectAuth();
+        _connectGame();
+        
     } catch (err) {
         logger.error(`${ENV} db 연결 안됨`, err);
         throw err;
     }
+
+    function _connectAuth(){
+        let _config = Object.assign(CONFIG["rdb"]["list"]["auth"], CONFIG["rdb"]["options"]);
+        dbAuthConnectionPool[0] = mysql.createPool(_config);
+        logger.info(`Auth DB CONNECTED`);
+    }
+
+    function _connectGame(){
+        const gameDBConfig = CONFIG["rdb"]["list"]["game"];
+        const gameDBList = gameDBConfig["hostList"];
+        for (let i = 0; i < gameDBList.length; i++) {
+            let _config = _.cloneDeep(gameDBConfig);
+            _config.host = gameDBList[i];
+            _config.database = `${_config.database}${i+1}`;
+            //delete _config.hostList;
+
+            dbGameConnectionPool[i] = mysql.createPool(_config);
+            logger.info(`Game0${i+1} DB CONNECTED`);
+        } 
+    }
 }
 
-function getConnection() {
-    return dbConnectionPool[ENV].getConnection();
+function getConnection(dbName) {
+    if (dbName === "auth") {
+        return dbAuthConnectionPool[0].getConnection();
+    } else if (!isNaN(dbName)) { // game
+        return dbGameConnectionPool[dbName].getConnection(); // dbName === shard number
+    }
 }
 
 exports.connect = connect;
