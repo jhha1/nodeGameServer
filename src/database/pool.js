@@ -1,5 +1,5 @@
 const mysql = require('mysql2/promise');
-const logger = require("../utils/logger");
+const log = require("../utils/logger");
 const _ = require("lodash");
 
 const dbAuthConnectionPool = []; 
@@ -18,14 +18,14 @@ function _connectMysql() {
         _connectGame();
         
     } catch (err) {
-        logger.error(`${ENV} db 연결 안됨`, err);
+        log.error(`${ENV} db 연결 안됨`, err);
         throw err;
     }
 
     function _connectAuth(){
         let _config = Object.assign(CONFIG["rdb"]["list"]["auth"], CONFIG["rdb"]["options"]);
         dbAuthConnectionPool[0] = mysql.createPool(_config);
-        logger.info(`Auth DB CONNECTED`);
+        log.info(`Auth DB CONNECTED`);
     }
 
     function _connectGame(){
@@ -35,10 +35,10 @@ function _connectMysql() {
             let _config = _.cloneDeep(gameDBConfig);
             _config.host = gameDBList[i];
             _config.database = `${_config.database}${i+1}`;
-            //delete _config.hostList;
+            delete _config.hostList;
 
-            dbGameConnectionPool[i] = mysql.createPool(_config);
-            logger.info(`Game0${i+1} DB CONNECTED`);
+            dbGameConnectionPool[i+1] = mysql.createPool(_config);
+            log.info(`Game0${i+1} DB CONNECTED`);
         } 
     }
 }

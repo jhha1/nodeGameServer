@@ -21,8 +21,14 @@ async function select(dbName, queries) {
         conn.release();
         conn = null;
 
-        for (let i = 0; i < results.length; i++) {
-            ret[queries[i][0]] = results[i];
+        if (queries.length === 1) {
+            for (let i = 0; i < results.length; i++) {
+                ret[queries[0][0]].push(results[i]);
+            }
+        } else {
+            for (let i = 0; i < results.length; i++) {
+                ret[queries[i][0]] = results[i];
+            }
         }
 
         return ret;

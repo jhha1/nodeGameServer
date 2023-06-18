@@ -29,23 +29,41 @@ const httpLogger = {
     },
 };
 
-const logger = createLogger({
+const appLogger = createLogger({
     level: 'info',
-    format: combine(label({label: 'biz'}), KST(), logFormat),
+    format: combine(label({label: ''}), KST(), logFormat),
     defaultMeta: { service: 'user-service' },
     transports: [
         new transports.File({filename: path.join(PATH, FILE, 'error.log'), level: 'error'}), // 에러
         new transports.File({filename: path.join(PATH, FILE, mt().tz('Asia/Seoul').format('YYYY-MM-DD'), 'app.log')}), // 모든 로그
     ]
 });
+
 // Console에도 출력하도록 설정
 const isProdunction = process.argv.slice(2).length > 0 && process.argv.slice(2)[0] === 'production';
 if (!isProdunction) {
-    logger.add(new transports.Console({
-      format: combine(label({label: 'biz'}), KST(), logFormat),
+    appLogger.add(new transports.Console({
+      format: combine(label({label: ''}), KST(), logFormat),
       level: 'debug'
     }));
 }
 
-module.exports = logger;
+const log = {
+    info (req, msg) {
+        appLogger.info(this.make(req, msg));
+    },
+    error (req, msg) {
+        appLogger.error(this.make(req, msg));
+    },
+    make (req, msg) {
+        if (!req && !msg) {
+            return '';
+        } else if (typeof req == 'string' && !msg) {
+            return req;
+        } 
+        return `${req.originalUrl} - [${req.body}] ${msg}`;
+    }
+}
+
+module.exports = log;
 module.exports.httpLogger = httpLogger;

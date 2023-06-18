@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require("path");
-const logger = require('../utils/logger');
 const googleApi = require("../database/google/googleApi");
 
 function loadConfig() {
@@ -68,17 +67,7 @@ function initializeConst(constTable) {
     });
 }
 
-function initializeAppLogger() {
-    //logger.initializeAppLogger();
-}
-
-function initializeHttpLogger() {
-    global.httpLogger = logger.initializeHttpLogger();
-}
-
 exports.loadConfig = loadConfig;
 exports.loadConst = loadConst;
 exports.initializeConfig = initializeConfig;
 exports.initializeConst = initializeConst;
-exports.initializeAppLogger = initializeAppLogger;
-exports.initializeHttpLogger = initializeHttpLogger;

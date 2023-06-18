@@ -1,9 +1,9 @@
 module.exports = {
-    selectByPlatformId: function (platformId) {
-        return `SELECT seq, platformId, userId, shardId FROM Account WHERE platformId = '${platformId}';`;  // seq, platformType, platformId, userId, deviceId, shardId 
+    select: function (platformType, platformId) {
+        return `SELECT seq, platform_type, platform_id, user_id, device_type, is_leave, shard_id FROM Account WHERE platform_type = '${platformType}' AND platform_id = '${platformId}';`;   
     },
-    insert: function (platformType, platformId, userId, deviceId, shardId) {
-        return `INSERT INTO Account (platformType, platformId, userId, deviceId, shardId) 
-        VALUES ('${platformType}', '${platformId}', '${userId}', '${deviceId}', ${shardId});`;  // seq, platformType, platformId, userId, deviceId, shardId 
+    insert: function (platformType, platformId, userId, deviceType, shardId) {
+        return `INSERT INTO Account (platform_type, platform_id, user_id, device_type, shard_id) 
+        VALUES ('${platformType}', '${platformId}', '${userId}', '${deviceType}', ${shardId});`;  
     },
 }
