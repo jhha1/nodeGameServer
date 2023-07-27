@@ -2,10 +2,11 @@ const cluster = require('cluster');
 const os = require('os');
 const moment = require('moment');
 const db = require('../database/db');
-const queries = require('../queries/account');
-const shardStatusqueries = require('../queries/shardStatus');
-const userqueries = require('../queries/user');
+const cache = require('../database/cache');
+const session = require('../database/session');
+const queries = require('../queries/mapper');
 const ConstValues = require('../common/constValues');
+const DBName = require('../common/constValues').DBName;
 const log = require('../utils/logger'); 
 
 class AccountService {
@@ -19,12 +20,19 @@ class AccountService {
 
     async Login() {
         try {
-            let { AccountRow } = await db.select('auth', [["AccountRow", queries.select(this.platformType, this.platformId)]]);
+            let query = [
+                ["AccountRow", queries.Account.select, [this.platformType, this.platformId]]
+            ];
+
+            let { AccountRow } = await db.select(DBName.Auth, query);
+
             if (AccountRow.length === 0) {
                 let { NewAccountRow } = await this._createNewAccount();
-                return NewAccountRow[0];
+                AccountRow = NewAccountRow;
             }
-            
+
+            await session.init(this.req, AccountRow[0]);
+
             return AccountRow[0];
         }
         catch (err) {
@@ -74,7 +82,12 @@ class NewAccountCreator {
     }
     
     async _getShardId() {
-        let { ShardStatusRows } = await db.select('auth', [["ShardStatusRows", shardStatusqueries.select()]]);
+        let query = [
+            ["ShardStatusRows", queries.ShardStatus.select, []]
+        ];
+
+        let { ShardStatusRows } = await db.select(DBName.Auth, query);
+
         if (ShardStatusRows.length === 0) {
             log.error(this.req, `FailedCreateNewAccount. ShardStatusDB Empty! platformType:${this.platformType}, platformId:${this.platformId}`);
             throw 10002;
@@ -105,13 +118,19 @@ class NewAccountCreator {
     }
 
     async _insertAccount(shardId, newUserId) {
-        let authQueries = [
-            queries.insert(this.platformType, this.platformId, newUserId, ConstValues.DeviceType.aos, shardId),
-            shardStatusqueries.increaseUserCount(shardId)
-        ]
-        await db.transaction('auth', authQueries);
+        let executeQuery = [
+            [queries.Account.insert, [this.platformType, this.platformId, newUserId, ConstValues.DeviceType.aos, shardId]],
+            [queries.ShardStatus.increaseUserCount, [shardId]]
+        ];
 
-        let { NewAccountRow } = await db.select('auth', [["NewAccountRow", queries.select(this.platformType, this.platformId)]]);
+        await db.execute(DBName.Auth, executeQuery);
+
+        let selectQuery = [
+            ["NewAccountRow", queries.Account.select, [this.platformType, this.platformId]],
+        ];
+
+        let { NewAccountRow } = await db.select(DBName.Auth, selectQuery);
+
         if (NewAccountRow.legnth === 0) {
             log.error(this.req, `FailedCreateNewAccount. platformType:${this.platformType}, platformId:${this.platformId}`);
             throw 10002;
@@ -124,14 +143,19 @@ class NewAccountCreator {
         let nowTimestamp = moment.utc().format('x');
 
         // 유저 생성시 같이 생성되어야 할 다른 디비로우도 추가
-        let userQueries = [
-            userqueries.insert(newUserId, shardId, '', nowTimestamp, nowTimestamp)
+        let executeQuery = [
+            [queries.User.insert, [newUserId, shardId, '', nowTimestamp, nowTimestamp]]
         ]
 
-        await db.transaction(shardId, userQueries);
+        await db.execute(shardId, executeQuery);
 
         // 유저 생성시 같이 생성되어야 할 다른 디비결과 같이 셀렉트 체크
-        let { UserRow } = await db.select(shardId, [["UserRow", userqueries.selectByUserId(newUserId)]]);
+        let selectQuery = [
+            ["UserRow", queries.User.selectByUserId, [newUserId]],
+        ];
+
+        let { UserRow } = await db.select(shardId, selectQuery);
+        
         if (UserRow.legnth === 0) {
             log.error(this.req, `FailedCreateNewUser. platformType:${this.platformType}, platformId:${this.platformId}`);
             throw 10003;

@@ -1,75 +1,74 @@
 const express = require('express');
 const {isMainThread, Worker, workerData, parentPort} = require("worker_threads");
 const bodyParser = require("body-parser");
-const glob = require("glob");
 const morgan = require("morgan");
+const router = express.Router();
 const httpLogger = require("../utils/logger").httpLogger;
-const logger = require("../utils/logger");
-const db = require("../database/pool");
+const log = require("../utils/logger");
+const db = require("../database/db");
+const cache = require("../database/cache");
 const initializer = require('../common/initialize');
+const response = require('../utils/response');
 
 const SERVER_PORT = 8886;
 
-// 워커 프로세스
+// worker process
 const initializeProcess = async() => {
     
-    // 마스터 스레드
+    // master thread
     if (isMainThread) {
         const app = express();
 
-        // 미들웨어 설정
+        // load static data
+        initializer.initializeConfig();
+        await initializer.initializeConst();
+
+        // connect db, cache
+        db.connect();
+        await cache.connect();
+
+        // middleware
         app.use(express.json()); 
         app.use(bodyParser.urlencoded({ extended: false }));
         app.use(bodyParser.json());
 
-        const routes = glob.sync(`${__dirname}/../routes/*.js`);
-        for (const route of routes) {
-            require(route)(app);
-        }
+        // session
+        initializer.initializeSession(app);
 
-        initializer.loadConfig();
-
-        app.use(morgan('combined', { stream: httpLogger }));
+        // app.use(morgan('combined', { stream: httpLogger }));
         app.use((err, req, res, next) => {
-            res.status(err.status || 500);
-            res.json(ResponseUtil.serialize(err));
+            response.error(res, err);
         });
-        
-       // await initializer.loadConst();
 
-        global.CONST_TABLE = [];
-
-        initializer.initializeConfig(CONFIG);
-        initializer.initializeConst(CONST_TABLE);
-
-        db.connect();
-
-        /*
-        // 스레드들 간에 공유할 데이터
-        const sharedData = [
-            CONFIG,
-            CONST_TABLE
-        ];
-
-        // 스레드 생성
-        const numWorkers = 1;
-        const workers = [];
-        for (let i = 0; i < numWorkers; i++) {
-        workers.push(new Promise((resolve, reject) => {
-            const worker = new Worker('./src/bin/worker.js', { workerData: { threadIndex: i, sharedData } });
-            worker.once("message", (message) => { 
-                if (message === "initialized") { resolve(); }
-            });
-            worker.on("error", reject);
-        }));
-        }
-        await Promise.all(workers); // 모든 작업자 스레드가 생성될 때까지 기다림    
-        */
+        app.use('/', initializer.initializeRoutes(router));
 
         app.listen(SERVER_PORT, () => {
-            logger.info(`Server running on port: ${SERVER_PORT}`);
+            log.info(`Server running on port: ${SERVER_PORT}`);
         });
     }
 }
 
 exports.initializeProcess = initializeProcess;
+
+
+/*
+// 스레드들 간에 공유할 데이터
+const sharedData = [
+    CONFIG,
+    CONST_TABLE
+];
+
+// 스레드 생성
+const numWorkers = 1;
+const workers = [];
+for (let i = 0; i < numWorkers; i++) {
+workers.push(new Promise((resolve, reject) => {
+    const worker = new Worker('./src/bin/worker.js', { workerData: { threadIndex: i, sharedData } });
+    worker.once("message", (message) => { 
+        if (message === "initialized") { resolve(); }
+    });
+    worker.on("error", reject);
+}));
+}
+await Promise.all(workers); // 모든 작업자 스레드가 생성될 때까지 기다림    
+*/

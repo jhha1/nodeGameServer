@@ -1,4 +1,4 @@
-const ResponseUtil = require('../utils/response-util');
+const ResponseUtil = require('../utils/response');
 const ConstService = require('../services/ConstService');
 
 exports.getTableList = async (req, res, cb) => {

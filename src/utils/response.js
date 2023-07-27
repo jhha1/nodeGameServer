@@ -1,4 +1,4 @@
-const log = require('../utils/logger'); 
+const log = require('./logger'); 
 
 const response = {
     send (res, data) {

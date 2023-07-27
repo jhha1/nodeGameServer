@@ -1,11 +1,8 @@
-const express = require('express');
-const router = express.Router();
 const ConstController = require('../controllers/ConstController');
 
-module.exports = (app) => {
-    app.use('/const', router);
-};
+module.exports.routes = {
+    "/refleshTables": ConstController.refleshTables,
+    "/listTables": ConstController.getTableList,
+}
 
-router.post('/refleshTables', ConstController.refleshTables);
-router.post('/listTables', ConstController.getTableList);
 

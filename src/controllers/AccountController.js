@@ -1,7 +1,7 @@
-const response = require('../utils/response-util');
+const response = require('../utils/response');
 const AccountService = require('../services/AccountService');
 
-exports.Login = async (req, res, cb) => {
+exports.AccountLogin = async (req, res, cb) => {
     try {
         let { platformType, platformId } = req.body;
         
@@ -15,4 +15,3 @@ exports.Login = async (req, res, cb) => {
         return response.error(res, err);
     }
 }
-
