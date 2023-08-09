@@ -8,7 +8,7 @@ const preProcess = require('../common/preProcess');
 const postProcess = require('../common/postProcess');
 const googleApi = require("../database/google/googleApi");
 const cache = require('../database/cache');
-const response = require('../utils/response');
+const Response = require('../utils/response');
 const ConstValues = require('./constValues');
 
 function initializeConfig() {
@@ -51,12 +51,37 @@ async function initializeConst() {
 
     // await loadConst();
 
-    global.CONST_TABLE = [];
+    global.CONST_TABLE = {};
+
+    /// 임시 셋팅
+    CONST_TABLE["Stage"] = [
+        {id:1, stageId:1, subStageId:1, goldAmount:100},
+        {id:2, stageId:1, subStageId:2, goldAmount:200}
+    ];
+    CONST_TABLE["Monster"] = [
+        {id:1, grade:1, level_max:10, hp:10},
+        {id:2, grade:1, level_max:20, hp:10}
+    ];
+    CONST_TABLE["Currency"] = [
+        {id:1, name:'gold'},
+        {id:2, name:'dia'},
+        {id:3, name:'coinA'},
+    ];
+    CONST_TABLE["KeyValues"] = [
+        {id:1, key:'UserCreateCurrency', value:[[1, 1.1e-70],[2, 1.1e-71]]},
+    ];
+    ///
 
     Object.defineProperty(global, 'CONST_TABLE', {
         value: global.CONST_TABLE,
         writable: false,
     });
+
+    const files = glob.sync(`${__dirname}/../const/*.js`);
+    for (const filePath of files) {
+        if (filePath.includes('mapper')) continue;
+        require(filePath).init();
+    }
 }
 
 async function loadConst() {
@@ -117,14 +142,19 @@ function initializeRoutes(router) {
 }
 
 async function doLogic(req, res, next, fn) {
+
+    let response = new Response(res);
+
     try {
         await preProcess.filter(req, res);
 
-        await fn(req, res, next); // controller logic
+        const result = await fn(req, res, next); // controller logic
 
         postProcess.filter(req, res);
+
+        return response.send(result);
     } catch (e) {
-        return response.error(res, e);
+        return response.error(e);
     }
 }
 

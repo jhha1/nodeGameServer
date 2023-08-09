@@ -5,4 +5,7 @@ module.exports = {
 
     /* game */
     User: require("./user"),
+    Currency: require("./currency"),
+    Stage: require("./stage"),
+    Hack: require("./hack"),
 };

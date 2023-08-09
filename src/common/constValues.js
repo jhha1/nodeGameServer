@@ -21,6 +21,22 @@ const constValues = {
     DeviceType: {
         aos: 1,
         ios: 2
+    },
+
+    Currency: {
+      Gold: 1,
+    },
+
+    Stage: {
+        Type: {
+            Normal: 1,
+        },
+        PlayLimitTime: 2000, // ms
+        StageStart: 1,
+        SubStageStart: 1,
+        SubStageMax: 5,
+        SubStageBoss: 5,
+        GoldBufferPercent: 10,
     }
 }
 

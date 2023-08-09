@@ -1,15 +1,18 @@
-const response = require('../utils/response');
 const UserService = require('../services/UserService');
+const Response = require("../utils/response");
 
 exports.LoginInfo = async (req, res, cb) => {
+
+    let response = new Response(res);
+
     try {
         let UserObject = new UserService(req);
         
-        let result = await UserObject.LoginInfo();
+        let result = await UserObject.getUserDataAll();
 
-        return response.send(res, result);
+        return response.set(result);
 
     } catch (err) {
-        return response.error(res, err);
+        throw err;
     }
 }
