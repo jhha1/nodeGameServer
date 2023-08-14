@@ -10,7 +10,19 @@ const keyValuesTable = {
     },
 
     get: function(key) {
-        return keyValuesTable._map[key];
+        if (!keyValuesTable._map[key]) {
+            return null;
+        }
+
+        if (keyValuesTable._map[key].type === 1) { // primitive int values
+            return Number(keyValuesTable._map[key]);
+        }
+        if (keyValuesTable._map[key].type === 2 && Array.isArray(keyValuesTable._map[key])) { // array
+            return JSON.parse(keyValuesTable._map[key]);
+        }
+        else {
+            return null;
+        }
     }
 };
 

@@ -6,6 +6,10 @@ module.exports = {
     /* game */
     User: require("./user"),
     Currency: require("./currency"),
+    ItemUnique: require("./ItemUnique"),
+    ItemStackable: require("./ItemStackable"),
+    Equip: require("./equip"),
     Stage: require("./stage"),
+    GachaLevel: require("./gachaLevel"),
     Hack: require("./hack"),
 };

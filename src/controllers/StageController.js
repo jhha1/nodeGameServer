@@ -8,7 +8,7 @@ const ConstValues = require("../common/constValues");
 
 exports.StageClear = async (req, res, cb) => {
     try {
-        let obj = new StageClear(req);
+        let obj = new StageClear(req, res);
         
         await obj.clear();
 
@@ -20,7 +20,7 @@ exports.StageClear = async (req, res, cb) => {
 }
 
 class StageClear {
-    constructor(req) {
+    constructor(req, res) {
         this.req = req;
         this.userId = req.session.userId;
         this.shardId = req.session.shardId;
@@ -39,7 +39,7 @@ class StageClear {
         this.warningPoint = 0;
 
         this.StageService = new StageService(req);
-        this.response = new Response();
+        this.response = new Response(res);
     }
 
     async clear() {

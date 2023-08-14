@@ -80,6 +80,26 @@ async function execute(dbName, queries) {
     }
 }
 
+async function insertWithReturnUID(dbName, query) {
+    if (!dbName || !query || query.length === 0) {
+        throw `디비질의실패. 매개변수확인. db:${dbName}, queries:${query}`;
+    }
+
+    let conn = null;
+    try {
+        conn = await getConnection(dbName);
+        const [ result ] = conn.execute(query[0], query[1]);
+        return result.insertId;
+    } catch (err) {
+        log.error(`[DB_ERR_QUERY] query {${query[0]}}, values {${query[1]}}`);
+        throw err;
+    } finally {
+        if (conn) {
+            conn.release();
+        }
+    }
+}
+
 /**
  * 앱 부팅 시 DB 연결
  */
@@ -129,3 +149,4 @@ function getConnection(dbName) {
 exports.connect = connect;
 exports.select = select;
 exports.execute = execute;
+exports.insertWithReturnUID = insertWithReturnUID;

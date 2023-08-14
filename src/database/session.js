@@ -9,20 +9,20 @@ async function initSession(req, Account) {
     req.session.deviceType = Account.device_type;
     req.session.isLeave = Account.is_leave;
 
-    await cache.Game.set(getTokenKey(req.session.platformId), req.sessionID); // session token
+    await cache.Game.SETEX(getTokenKey(req.session.platformId), 60*30, req.sessionID); // session token
 }
 
 async function deleteSession(token) {
-    await cache.Game.del(getSessionKey(token));
+    await cache.Game.DEL(getSessionKey(token));
 }
 
 async function checkSameToken(requestedToken, platformId) {
-    const token = await cache.Game.get(getTokenKey(platformId));
+    const token = await cache.Game.GET(getTokenKey(platformId));
     return requestedToken === token;
 }
 
 async function deleteToken(platformId) {
-    await cache.Game.del(getTokenKey(platformId));
+    await cache.Game.DEL(getTokenKey(platformId));
 }
 
 function getSessionKey(token) {

@@ -1,26 +1,12 @@
 const redis = require('redis');
-const log = require('../utils/logger'); 
+const log = require('../utils/logger');
+const moment = require("moment");
+const ConstValues = require("../common/constValues");
 
 const RETRY_COUNT = 10;
 const RETRY_INTERVAL_MS = 1000;
 
 let RedisGameClient = null;
-
-class Game {
-    static async get(key) {
-        return await RedisGameClient.get(key);
-    }
-    
-    static async set(key, data, ttl=null) {
-        if (ttl === null) ttl = 60 * 30; // 30분 동안 캐시 유지
-
-        await RedisGameClient.setEx(key, ttl, data); 
-    }
-
-    static async del(key) {
-        return await RedisGameClient.del(key);
-    }
-}
 
 async function connect() {
     try {
@@ -82,6 +68,10 @@ function getGameRedis() {
     return RedisGameClient;
 }
 
+function expireDt() { // 30분 주기 ttl
+    return moment.utc().add(ConstValues.Cache.TTL, 'minutes').unix();
+}
+
 exports.connect = connect;
-exports.GameRedisClient = getGameRedis;
-exports.Game = Game;
+exports.Game = getGameRedis;
+exports.expireDt = expireDt;

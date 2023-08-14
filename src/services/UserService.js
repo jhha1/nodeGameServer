@@ -41,17 +41,28 @@ class UserService {
         const userId = NewAccount.user_id;
         const now = moment.utc().format('x');
 
-        let currencyInitData = ConstTables.KeyValues.get("UserCreateCurrency") ?? [];
-        if (currencyInitData.length === 0) {
-            log.error(this.req, `FailedCreateNewUser. NoExist_Default_Currency_Data`);
+        let currencyInitData = ConstTables.KeyValues.get("UserCreateCurrency");
+        let heroInitData = ConstTables.KeyValues.get("UserCreateHero");
+        let itemInitData = ConstTables.KeyValues.get("UserCreateItem");
+
+        if (!currencyInitData || !itemInitData || !heroInitData) {
+            log.error(this.req, `FailedCreateNewUser. NoExist_Init_Data`);
             throw 99999;
         }
+
         let currencyQueryData = currencyInitData.flatMap(data => [userId, ...data]);
+        let itemQueryData = [];
+        for (let data of itemInitData) {
+            const C_Item = ConstTables.Item.get(data[0]);
+            itemQueryData.push([userId, C_Item.kind, C_Item.id, C_Item.grade, 1, data[1]]);
+        }
+        itemQueryData = itemQueryData.flatMap(data => [...data]);
 
         // 유저 생성시 같이 생성되어야 할 다른 디비로우도 추가
         let executeQuery = [
             [Queries.User.insert, [userId, shardId, '', now, now]],
-            [Queries.Currency.insertMany(currencyInitData.length), currencyQueryData]
+            [Queries.Currency.insertMany(currencyInitData.length), currencyQueryData],
+            [Queries.ItemUnique.insertMany(itemQueryData.length), itemQueryData],
         ]
 
         await db.execute(shardId, executeQuery);
