@@ -68,10 +68,11 @@ function getGameRedis() {
     return RedisGameClient;
 }
 
-function expireDt() { // 30분 주기 ttl
-    return moment.utc().add(ConstValues.Cache.TTL, 'minutes').unix();
+async function isExpired(key) {
+    let TTL = await getGameRedis().TTL(key);
+    return !TTL || TTL < ConstValues.Cache.RefreshTTL;
 }
 
 exports.connect = connect;
 exports.Game = getGameRedis;
-exports.expireDt = expireDt;
+exports.isExpired = isExpired;

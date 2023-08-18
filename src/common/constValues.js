@@ -13,8 +13,8 @@ const constValues = {
     },
 
     Cache: {
-        TTL: 30, // 분 단위
-        RefreshPTTL: 10000, // 10초
+        TTL: 1800, // 30분
+        RefreshTTL: 10, // 10초
     },
 
     PlatformType: {
@@ -28,15 +28,17 @@ const constValues = {
         ios: 2
     },
 
-    Currency: {
-      Gold: 1,
-    },
-
     Item: {
-      Type: {
-          Stackable: 1,
-          Unique: 2,
-      }
+        Type: {
+            None: 0,
+            Double: 100001,
+            Stackable: 100000,
+            Equip: 200000,
+        },
+        Stackable: {
+            Gold: 100001,
+            DIA: 100002,
+        }
     },
 
     Stage: {
@@ -49,6 +51,20 @@ const constValues = {
         SubStageMax: 5,
         SubStageBoss: 5,
         GoldBufferPercent: 10,
+    },
+
+    Gacha: {
+        Type: {
+            ItemEquip: 1,
+            ItemWeapon: 2,
+            ItemArmor: 3,
+            Item1: 4,
+            Item2: 5,
+            Item3: 6,
+            Skill: 7,
+            Pet: 8,
+            All: 9
+        }
     }
 }
 
@@ -83,11 +99,11 @@ CREATE TABLE `Account` (
   UNIQUE KEY `platform_type` (`platform_type`,`platform_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 
-CREATE TABLE `Currency` (
+CREATE TABLE `ItemDouble` (
   `user_id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `currency_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
   `amount` double DEFAULT '0',
-  PRIMARY KEY (`user_id`, currency_id)
+  PRIMARY KEY (`user_id`,`item_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 
 CREATE TABLE `Equip` (
@@ -98,14 +114,13 @@ CREATE TABLE `Equip` (
   PRIMARY KEY (`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 
-CREATE TABLE jhha_game01.`ItemUnique` (
-`user_id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `kind` int(11) NOT NULL,
+CREATE TABLE `ItemEquip` (
+  `user_id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
   `item_id` int(11) NOT NULL,
   `grade` int(11) NOT NULL,
   `level` int(11) NOT NULL,
-  `piece_count` int(11) NOT NULL,
-  PRIMARY KEY (`uid`)
+  `piece_count` int(11) DEFAULT '0',
+  PRIMARY KEY (`user_id`, item_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 
 CREATE TABLE jhha_game01.`Hero` (
@@ -126,9 +141,8 @@ CREATE TABLE `GachaLevel` (
 
 CREATE TABLE `ItemStackable` (
   `user_id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
-  `kind` int(11) NOT NULL,
-  `id` int(11) NOT NULL,
-  `count` int(11) NOT NULL,
-  PRIMARY KEY (`user_id`, kind, id)
+  `item_id` int(11) NOT NULL,
+  `count` bigint(20) NOT NULL,
+  PRIMARY KEY (`user_id`, id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
  */

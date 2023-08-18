@@ -53,7 +53,7 @@ class UserService {
         let currencyQueryData = currencyInitData.flatMap(data => [userId, ...data]);
         let itemQueryData = [];
         for (let data of itemInitData) {
-            const C_Item = ConstTables.Item.get(data[0]);
+            const C_Item = ConstTables.ItemEquip.get(data[0]);
             itemQueryData.push([userId, C_Item.kind, C_Item.id, C_Item.grade, 1, data[1]]);
         }
         itemQueryData = itemQueryData.flatMap(data => [...data]);
@@ -61,8 +61,8 @@ class UserService {
         // 유저 생성시 같이 생성되어야 할 다른 디비로우도 추가
         let executeQuery = [
             [Queries.User.insert, [userId, shardId, '', now, now]],
-            [Queries.Currency.insertMany(currencyInitData.length), currencyQueryData],
-            [Queries.ItemUnique.insertMany(itemQueryData.length), itemQueryData],
+            [Queries.ItemDouble.insertMany(currencyInitData.length), currencyQueryData],
+            [Queries.ItemEquip.insertMany(itemQueryData.length), itemQueryData],
         ]
 
         await db.execute(shardId, executeQuery);
@@ -79,7 +79,7 @@ class UserDataHelper {
     async getAll() {
         let queries = [
             ["UserRow", Queries.User.selectByUserId, [this.userId]],
-            ["CurrencyRows", Queries.Currency.select, [this.userId]],
+            ["CurrencyRows", Queries.ItemDouble.select, [this.userId]],
         ];
 
         let { UserRow, CurrencyRows } = await db.select(this.shardId, queries);

@@ -42,6 +42,9 @@ const initializeProcess = async() => {
 
         app.use('/', initializer.initializeRoutes(router));
 
+        // game values
+        initializer.initailizeGameValues();
+
         app.listen(SERVER_PORT, () => {
             log.info(`Server running on port: ${SERVER_PORT}`);
         });

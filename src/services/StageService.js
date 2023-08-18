@@ -13,7 +13,7 @@ class StageService {
     async updateClear(clearStageId, newGoldAmount, warningPoint) {
         let executeQuery = [
             [Queries.Stage.update, [this.userId, ConstValues.Stage.Type.Normal, clearStageId]],
-            [Queries.Currency.update, [this.userId, ConstValues.Currency.Gold, newGoldAmount]]
+            [Queries.ItemDouble.update, [this.userId, ConstValues.Item.Stackable.Gold, newGoldAmount]]
         ];
 
         if (warningPoint > 0) { // hack

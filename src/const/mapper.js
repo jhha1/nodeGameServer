@@ -1,11 +1,11 @@
 module.exports = {
     KeyValues: require("./KeyValuesTable"),
     Hero: require("./HeroTable"),
-    Item: require("./ItemTable"),
+    ItemEquip: require("./ItemEquipTable"),
+    ItemEquipLevelUp: require("./ItemEquipLevelUpTable"),
     Stage: require("./StageTable"),
     Monster: require("./MonsterTable"),
     Pet: require("./PetTable"),
     Gacha: require("./GachaTable"),
-    GachaLevel: require("./GachaLevelTable"),
     GachaProb: require("./GachaProbTable"),
 };

@@ -3,13 +3,15 @@ const path = require("path");
 const glob = require("glob");
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const RedisStore = require('connect-redis').default; 
+const RedisStore = require('connect-redis').default;
+const seedrandom = require("seedrandom");
 const preProcess = require('../common/preProcess');
 const postProcess = require('../common/postProcess');
 const googleApi = require("../database/google/googleApi");
 const cache = require('../database/cache');
 const Response = require('../utils/response');
 const ConstValues = require('./constValues');
+const util = require('../utils/util');
 
 function initializeConfig() {
     
@@ -116,12 +118,12 @@ async function initializeConst() {
         {id:1, stageId:1, subStageId:1, goldAmount:100},
         {id:2, stageId:1, subStageId:2, goldAmount:200}
     ];
-    CONST_TABLE["ItemStackable"] = [
+    CONST_TABLE["haveItemStackable"] = [
         {id:1, kind:1, name:'gold'},
         {id:2, kind:1, name:'dia'},
         {id:3, kind:2, name:'heroLevelUpPiece'},
     ];
-    CONST_TABLE["ItemEquip"] = [
+    CONST_TABLE["haveItemEquip"] = [
         {id:1, kind:1, grade:1, name:'attack_item_1'},
         {id:2, kind:1, grade:2, name:'attack_item_2'},
         {id:3, kind:2, grade:1, name:'defence_item_1'}
@@ -150,7 +152,7 @@ async function initializeConst() {
         {id:2, gacha_id:2, pay_item_id:2, gacha_count_1:11, gacha_count_2:35, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
         {id:3, gacha_id:3, pay_item_id:2, gacha_count_1:11, gacha_count_2:35, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
     ];
-    CONST_TABLE["GachaLevel"] = [
+    CONST_TABLE["ItemEquipLevelUp"] = [
         {id:1, gacha_id:1, level:1, point:60, prob_id:1},
         {id:2, gacha_id:1, level:2, point:70, prob_id:2},
         {id:3, gacha_id:1, level:3, point:80, prob_id:3},
@@ -242,6 +244,20 @@ function initializeRoutes(router) {
     return router;
 }
 
+function initailizeGameValues() {
+    // random
+    util.Random.GachaGradeItemEquip = seedrandom();
+    util.Random.GachaGradeItemWeapon = seedrandom();
+    util.Random.GachaGradeItemArmor = seedrandom();
+    util.Random.GachaGradeSkill = seedrandom();
+    util.Random.GachaGradePet = seedrandom();
+    util.Random.GachaItemEquip = seedrandom();
+    util.Random.GachaItemWeapon = seedrandom();
+    util.Random.GachaItemArmor = seedrandom();
+    util.Random.GachaItemSkill = seedrandom();
+    util.Random.GachaItemPet = seedrandom();
+}
+
 async function doLogic(req, res, next, fn) {
 
     let response = new Response(res);
@@ -263,3 +279,4 @@ exports.initializeConfig = initializeConfig;
 exports.initializeConst = initializeConst;
 exports.initializeSession = initializeSession;
 exports.initializeRoutes = initializeRoutes;
+exports.initailizeGameValues = initailizeGameValues;

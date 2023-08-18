@@ -5,8 +5,8 @@ module.exports = {
 
     /* game */
     User: require("./user"),
-    Currency: require("./currency"),
-    ItemUnique: require("./ItemUnique"),
+    ItemDouble: require("./itemDouble"),
+    ItemEquip: require("./itemEquip"),
     ItemStackable: require("./ItemStackable"),
     Equip: require("./equip"),
     Stage: require("./stage"),
