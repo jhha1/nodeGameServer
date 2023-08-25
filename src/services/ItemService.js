@@ -13,41 +13,52 @@ class ItemService {
 
     constructor(req) {
         this.#req = req;
+        this.#itemStackableObject = new ItemStackable(this.#req);
+        this.#itemEquipObject = new ItemEquip(this.#req);
+    }
+
+    async loadAllItems() {
+        await this.Stackable.getAll();
+        await this.Equip.getAll();
+    }
+
+    async saveCacheOnly() {
+        await this.Stackable.mSetCacheOnly();
+        await this.Equip.mSetCacheOnly();
+    }
+
+    calculateIncrease(incrItemList) {
+        this.Stackable.calculateIncrease(incrItemList);
+        this.Equip.calculateIncrease(incrItemList);
+    }
+
+    calculateDecrease(decrItemList) {
+        this.Stackable.calculateDecrease(decrItemList);
+        this.Equip.calculateDecrease(decrItemList);
+    }
+
+    isFloatingPointItem(itemId) {
+        return ItemType.FloatingPoint === itemId;
+    }
+
+    isStackableItem(itemId) {
+        return ItemType.Stackable < itemId  && itemId < ItemType.Equip;
+    }
+
+    isEquipItem(itemId) {
+        return ItemType.Equip < itemId;
     }
 
     get Stackable() {
-        if (!this.#itemStackableObject) {
-            this.#itemStackableObject = new ItemStackable(this.#req)
-        }
         return this.#itemStackableObject;
     }
 
     get Equip() {
-        if (!this.#itemEquipObject) {
-            this.#itemEquipObject = new ItemEquip(this.#req);
-        }
         return this.#itemEquipObject;
     }
 
-    async loadAll() {
-        this.Equip.init();
-        this.Stackable.init();
-    }
-
-    incrCheck(incrItemList) {
-        this.Stackable.incrCheck(incrItemList);
-        this.Equip.incrCheck(incrItemList);
-    }
-
-    decrCheck(decrItemList) {
-        this.Stackable.decrCheck(decrItemList);
-        this.Equip.decrCheck(decrItemList);
-    }
-
-    getItemType(itemId) {
-        if (ItemType.Double === itemId) return ItemType.Double;
-        else if (ItemType.Stackable < itemId && itemId < ItemType.Equip) return ItemType.Stackable;
-        else if (ItemType.Equip < itemId) return ItemType.Equip;
+    get executeQueries() {
+        return [...this.Stackable.executeQueries(), ...this.Equip.executeQueries()];
     }
 }
 
@@ -56,8 +67,8 @@ class ItemStackable {
     #userId;
     #shardId;
     #data;
-    #dbQueries;
-    #cacheData;
+    #executeQueries;
+    #updateCashValues;
 
     constructor(req) {
         this.#req = req;
@@ -66,82 +77,74 @@ class ItemStackable {
 
         this.#data = [];
 
-        this.#dbQueries = [];
-        this.#cacheData = [];
-    }
-
-    async init() {
-        await this.#loadAll();
-        return this;
-    }
-
-    async getAll() {
-        if (!this.#data) {
-            await this.#loadAll();
-        }
-        return this.#data;
-    }
-
-    async #loadAll() {
-        let data = await cache.Game.HGETALL(this.#key);
-        if (!data) {
-            return await this.#loadDB();
-        }
-
-        this.#data = data.filter((_, index) => index % 2 === 1);
-        return this.#data;
+        this.#executeQueries = [];
+        this.#updateCashValues = [];
     }
 
     async get(itemId) {
         let data = await cache.Game.HGET(this.#key, itemId);
         if (!data) {
-            data = await this.#loadDB();
+            this.#data = await this.#loadDB();
 
-            return Array.isArray(data)? data.find((x) => x.item_id === itemId) : null;
+            return Array.isArray(this.#data)? this.#data.find((x) => x.item_id === itemId) : null;
         }
         return data;
     }
 
-    async getMulti(itemIdList) {
+    async mGet(itemIdList) {
         let data = await cache.Game.HGET(this.#key, itemIdList);
         if (!data) {
-            data = await this.#loadDB();
-            return data.filter(d => itemIdList.includes(d.item_id));
+            this.#data = await this.#loadDB();
+            return this.#data.filter(d => itemIdList.includes(d.item_id));
         }
 
         return data.filter((_, index) => index % 2 === 1);
     }
 
-
-
-    async addDirectly(kind, itemId, count) {
-        let query = [
-            [Queries.ItemStackable.insert, [this.userId, kind, itemId, count]]
-        ];
-        await db.execute(this.shardId, query);
-
-        const data = {user_id:this.userId, kind:kind, item_id:itemId, count:count};
-        await this.#setCache(itemId, data);
+    async getAll() {
+        if (!this.#data) {
+            let data = await cache.Game.HGETALL(this.#key);
+            if (!data) {
+                this.#data = await this.#loadDB();
+            }
+            else {
+                this.#data = data.filter((_, index) => index % 2 === 1);
+            }
+        }
+        return this.#data;
     }
 
-    async updateDirectly(kind, itemId, count) {
-        let query = [
-            [Queries.ItemStackable.update, [count, this.userId, itemId]]
-        ];
-        await db.execute(this.shardId, query);
-
-        let data = {user_id:this.userId, kind:kind, item_id:itemId, count:count};
-        await this.#setCache(itemId, data);
+    async setCacheOnly(itemId, data) {
+        if (await cache.isExpired(this.#key)) {
+            await this.#loadDB(); // 이때 캐시에 set도 하므로
+        }
+        else {
+            await cache.Game.HSET(this.#key, itemId, data);
+        }
     }
 
-    incrCheck(incrItemList) {
-        const incrList = incrItemList.filter((x) => this.isStackableItem(x.item_id));
+    async mSetCacheOnly() {
+        if (await cache.isExpired(this.#key)) {
+            await this.#loadDB();
+        }
+        else {
+            let data = [];
+            for (let row of this.#updateCashValues) {
+                data.push(row.item_id);
+                data.push(row);
+            }
+            await cache.Game.HSET(this.#key, ...data);
+        }
+    }
+
+    calculateIncrease(incrItemList) {
+        const incrList = incrItemList.filter((x) => super.isStackableItem(x.item_id));
         const mergedIncrList = util.mergeDuplicatedItems(incrList);
         for (let incr of mergedIncrList) {
             let found = this.#data.findIndex((x) => x.item_id === incr.id);
             if (found === -1) {
-                this.#dbQueries.push([Queries.ItemStackable.insert, [this.#userId, incr.id, incr.count]]);
-                this.#cacheData.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
+                this.#executeQueries.push([Queries.ItemStackable.insert, [this.#userId, incr.id, incr.count]]);
+                this.#updateCashValues.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
 
                 this.#data.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
             }
@@ -149,16 +152,16 @@ class ItemStackable {
                 let item = this.#data[found];
                 item.count += incr.count;
 
-                this.#dbQueries.push([Queries.ItemStackable.update, [item.count, this.#userId, incr.id]]);
-                this.#cacheData.push({user_id:this.#userId, item_id:incr.id, count:item.count});
+                this.#executeQueries.push([Queries.ItemStackable.update, [item.count, this.#userId, incr.id]]);
+                this.#updateCashValues.push({user_id:this.#userId, item_id:incr.id, count:item.count});
 
                 this.#data[found].count = item.count;
             }
         }
     }
 
-    decrCheck(decrItemList) {
-        const decrList = decrItemList.filter((x) => this.isStackableItem(x.item_id));
+    calculateDecrease(decrItemList) {
+        const decrList = decrItemList.filter((x) => super.isStackableItem(x.item_id));
         const mergedDecrList = util.mergeDuplicatedItems(decrList);
         for (let decr of mergedDecrList) {
             let found = this.#data.findIndex((x) => x.item_id === decr.id);
@@ -175,40 +178,10 @@ class ItemStackable {
 
             item.count -= decr.count;
 
-            this.#dbQueries.push([Queries.ItemStackable.update, [item.count, this.#userId, decr.id]]);
-            this.#cacheData.push({user_id:this.#userId, kind:item.kind, item_id:decr.id, count:item.count});
+            this.#executeQueries.push([Queries.ItemStackable.update, [item.count, this.#userId, decr.id]]);
+            this.#updateCashValues.push({user_id:this.#userId, kind:item.kind, item_id:decr.id, count:item.count});
 
             this.#data[found].count = item.count;
-        }
-    }
-
-    isStackableItem(itemId) {
-        return ItemType.Stackable < itemId  && itemId < ItemType.Equip;
-    }
-
-
-
-
-    async #setCache(hKey, data) {
-        if (await cache.isExpired(this.#key)) {
-            await this.#loadDB(); // 캐시에 set도 함
-        }
-        else {
-            await cache.Game.HSET(this.#key, hKey, data);
-        }
-    }
-
-    async #mSetCache(rows) {
-        if (await cache.isExpired(this.#key)) {
-            await this.#loadDB();
-        }
-        else {
-            let data = [];
-            for (let row of rows) {
-                data.push(row.item_id);
-                data.push(row);
-            }
-            await cache.Game.HSET(this.#key, ...data);
         }
     }
 
@@ -227,8 +200,11 @@ class ItemStackable {
         await cache.Game.HSET(this.#key, ...data);
         await cache.Game.EXPIRE(this.#key, ConstValues.Cache.TTL);
 
-        this.#data = rowsDB;
-        return this.#data;
+        return rowsDB;
+    }
+
+    get executeQueries() {
+        return this.#executeQueries;
     }
 
     get #key() {
@@ -241,8 +217,8 @@ class ItemEquip {
     #userId;
     #shardId;
     #data;
-    #dbQueries;
-    #cacheData;
+    #executeQueries;
+    #updateCashValues;
     constructor(req) {
         this.#req = req;
         this.#userId = req.session.userId;
@@ -250,59 +226,63 @@ class ItemEquip {
 
         this.#data = [];
 
-        this.#dbQueries = [];
-        this.#cacheData = [];
-    }
-
-    async init(opt=true) {
-        await this.#loadAll();
-        return this;
-    }
-
-    async getAll() {
-        if (!this.#data) {
-            await this.#loadAll();
-        }
-        return this.#data;
-    }
-
-    async #loadAll() {
-        let data = await cache.Game.HGETALL(this.#key);
-        if (!data) {
-            return await this.#loadDB();
-        }
-
-        this.#data = data.filter((_, index) => index % 2 === 1);
-        return this.#data;
+        this.#executeQueries = [];
+        this.#updateCashValues = [];
     }
 
     async get(itemId) {
         let data = await cache.Game.HGET(this.#key, itemId);
         if (!data) {
-            data = await this.#loadDB();
-
-            return Array.isArray(data)? data.find((x) => x.item_id === itemId) : null;
+            this.#data = await this.#loadDB();
+            return Array.isArray(this.#data)? this.#data.find((x) => x.item_id === itemId) : null;
         }
         return data;
     }
 
-    async getMulti(itemIdList) {
+    async mGet(itemIdList) {
         let data = await cache.Game.HGET(this.#key, itemIdList);
         if (!data) {
-            data = await this.#loadDB();
+            this.#data = await this.#loadDB();
+            return this.#data.filter(d => itemIdList.includes(d.item_id));
         }
 
-        data = data.filter(d => itemIdList.includes(d.item_id));
-
-        return data;
+        return data.filter(d => itemIdList.includes(d.item_id));
     }
 
     async getAll() {
-        let data = await cache.Game.HGETALL(this.#key);
-        if (!data) {
-            data = await this.#loadDB();
+        if (!this.#data) {
+            let data = await cache.Game.HGETALL(this.#key);
+            if (!data) {
+                this.#data = await this.#loadDB();
+            }
+            else {
+                this.#data = data.filter((_, index) => index % 2 === 1);
+            }
         }
-        return data;
+        return this.#data;
+    }
+
+    async setCacheOnly(itemId, data) {
+        if (await this.#isExpired()) {
+            await this.#loadDB();
+        }
+        else {
+            await cache.Game.HSET(this.#key, itemId, data);
+        }
+    }
+
+    async mSetCacheOnly() {
+        if (await cache.isExpired(this.#key)) {
+            await this.#loadDB();
+        }
+        else {
+            let data = [];
+            for (let row of this.#updateCashValues) {
+                data.push(row.item_id);
+                data.push(row);
+            }
+            await cache.Game.HSET(this.#key, ...data);
+        }
     }
 
     async addDirectly(kind, itemId, grade, level, pieceCount) {
@@ -325,14 +305,14 @@ class ItemEquip {
         await this.#setCache(itemId, data);
     }
 
-    incrCheck(incrItemList) {
-        const incrList = incrItemList.filter((x) => this.isEquipItem(x.item_id));
+    calculateIncrease(incrItemList) {
+        const incrList = incrItemList.filter((x) => super.isEquipItem(x.item_id));
         const mergedIncrList = util.mergeDuplicatedItems(incrList);
         for (let incr of mergedIncrList) {
             let found = this.#data.findIndex((x) => x.item_id === incr.id);
             if (found === -1) {
-                this.#dbQueries.push([Queries.ItemEquip.insert, [this.#userId, incr.id, incr.count]]);
-                this.#cacheData.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
+                this.#executeQueries.push([Queries.ItemEquip.insert, [this.#userId, incr.id, incr.count]]);
+                this.#updateCashValues.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
 
                 this.#data.push({user_id:this.#userId, item_id:incr.id, count:incr.count});
             }
@@ -340,16 +320,16 @@ class ItemEquip {
                 let item = this.#data[found];
                 item.count += incr.count;
 
-                this.#dbQueries.push([Queries.ItemEquip.update, [item.count, this.#userId, incr.id]]);
-                this.#cacheData.push({user_id:this.#userId, item_id:incr.id, count:item.count});
+                this.#executeQueries.push([Queries.ItemEquip.update, [item.count, this.#userId, incr.id]]);
+                this.#updateCashValues.push({user_id:this.#userId, item_id:incr.id, count:item.count});
 
                 this.#data[found].count = item.count;
             }
         }
     }
 
-    decrCheck(decrItemList) {
-        const decrList = decrItemList.filter((x) => this.isEquipItem(x.item_id));
+    calculateDecrease(decrItemList) {
+        const decrList = decrItemList.filter((x) => super.isEquipItem(x.item_id));
         const mergedDecrList = util.mergeDuplicatedItems(decrList);
         for (let decr of mergedDecrList) {
             let found = this.#data.findIndex((x) => x.item_id === decr.id);
@@ -366,15 +346,11 @@ class ItemEquip {
 
             item.count -= decr.count;
 
-            this.#dbQueries.push([Queries.ItemEquip.update, [item.level, item.count, this.#userId, item.id]]);
-            this.#cacheData.push({user_id:this.#userId, item_id:item.id, grade:item.grade, level:item.level, piece_count:item.count});
+            this.#executeQueries.push([Queries.ItemEquip.update, [item.level, item.count, this.#userId, item.id]]);
+            this.#updateCashValues.push({user_id:this.#userId, item_id:item.id, grade:item.grade, level:item.level, piece_count:item.count});
 
             this.#data[found].count = item.count;
         }
-    }
-
-    isEquipItem(itemId) {
-        return ItemType.Equip < itemId;
     }
 
     async #loadDB() {
@@ -383,33 +359,25 @@ class ItemEquip {
 
         let { rowsDB } = await db.select(this.#shardId, query);
 
-        await this.#mSetCache(rowsDB);
-
-        return rowsDB;
-    }
-
-    async #setCache(hKey, data) {
-        if (await this.#isExpired()) {
-            await this.#loadDB(); // 캐시에 set도 함
-        }
-        else {
-            await cache.Game.HSET(this.#key, hKey, data);
-        }
-    }
-
-    async #mSetCache(rows) {
+        // cache 저장
         let data = [];
-        for (let row of rows) {
+        for (let row of rowsDB) {
             data.push(row.item_id);
             data.push(row);
         }
         await cache.Game.HSET(this.#key, ...data);
         await cache.Game.EXPIRE(this.#key, ConstValues.Cache.TTL);
+
+        return rowsDB;
     }
 
     async #isExpired() {
         let TTL = await cache.Game.TTL(this.#key);
         return !TTL || TTL < ConstValues.Cache.RefreshTTL;
+    }
+
+    get executeQueries() {
+        return this.#executeQueries;
     }
 
     get #key() {

@@ -31,7 +31,7 @@ const constValues = {
     Item: {
         Type: {
             None: 0,
-            Double: 100001,
+            FloatingPoint: 100001,
             Stackable: 100000,
             Equip: 200000,
         },

@@ -8,4 +8,5 @@ module.exports = {
     Pet: require("./PetTable"),
     Gacha: require("./GachaTable"),
     GachaProb: require("./GachaProbTable"),
+    GachaLevel: require("./GachaLevelTable"),
 };

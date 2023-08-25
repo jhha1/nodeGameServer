@@ -1,6 +1,7 @@
 const helper = require("./helper");
 const ItemEquipTable = {
     _listByEquipKind: {},
+    _listByEquipGrade: {},
     _listByEquipKindAndGrade: {},
 
     init: function() {
@@ -8,18 +9,25 @@ const ItemEquipTable = {
         for (let row of rows) {
             if (!ItemEquipTable._listByEquipKind[row.kind])
                 ItemEquipTable._listByEquipKind[row.kind] = [];
+            if (!ItemEquipTable._listByEquipGrade[row.grade])
+                ItemEquipTable._listByEquipGrade[row.grade] = [];
             if (!ItemEquipTable._listByEquipKindAndGrade[row.kind])
                 ItemEquipTable._listByEquipKindAndGrade[row.kind] = {};
             if (!ItemEquipTable._listByEquipKindAndGrade[row.kind][row.grade])
                 ItemEquipTable._listByEquipKindAndGrade[row.kind][row.grade] = [];
 
             ItemEquipTable._listByEquipKind[row.kind].push(row);
+            ItemEquipTable._listByEquipGrade[row.grade].push(row);
             ItemEquipTable._listByEquipKindAndGrade[row.kind][row.grade].push(row);
         }
     },
 
     getByEquipKind: function(kind) {
         return ItemEquipTable._listByEquipKind[kind];
+    },
+
+    getListByGrade: function(grade) {
+        return ItemEquipTable._listByEquipGrade[grade];
     },
 
     getByEquipKindAndGrade: function(kind, grade) {
