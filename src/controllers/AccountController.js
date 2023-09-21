@@ -1,6 +1,6 @@
 const Response = require('../utils/response');
 const AccountService = require('../services/AccountService');
-const UserService = require("../services/UserService");
+const UserService = require("../services/user/UserService");
 const session = require("../database/session");
 const ConstValues = require("../common/constValues");
 const log = require("../utils/logger");

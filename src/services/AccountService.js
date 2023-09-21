@@ -43,7 +43,7 @@ class AccountService {
 
         let { NewAccountRow } = await db.select(DBName.Auth, selectQuery);
 
-        if (NewAccountRow.legnth === 0) {
+        if (NewAccountRow.length === 0) {
             log.error(this.req, `FailedCreateNewAccount. platformType:${this.platformType}, platformId:${this.platformId}`);
             throw 10002;
         }

@@ -3,6 +3,34 @@ const { combine, label, printf } = format;
 const path = require('path');
 const mt = require('moment-timezone');
 
+
+Object.defineProperty(global, '__stack', {
+    get: function() {
+        let orig = Error.prepareStackTrace;
+        Error.prepareStackTrace = function(_, stack) {
+            return stack;
+        };
+        let err = new Error;
+        Error.captureStackTrace(err, arguments.callee);
+        let stack = err.stack;
+        Error.prepareStackTrace = orig;
+        return stack;
+    }
+});
+
+Object.defineProperty(global, '__line', {
+    get: function() {
+        return __stack[3].getLineNumber();
+    }
+});
+
+Object.defineProperty(global, '__function', {
+    get: function() {
+        return __stack[3].getFunctionName();
+    }
+});
+
+
 //const PATH = `${__dirname}\\..\\..\\`;
 const PATH =  process.cwd();
 const FILE = 'logs';
@@ -61,7 +89,7 @@ const log = {
         } else if (typeof req == 'string' && !msg) {
             return req;
         } 
-        return `${req.originalUrl} - [${req.body}] ${msg}`;
+        return `${req.originalUrl} - [${JSON.stringify(req.body)}] ${__function}:${__line} ${msg} \n ${__stack}`;
     }
 }
 

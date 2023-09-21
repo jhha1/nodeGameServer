@@ -3,7 +3,7 @@ const PetTable = {
     _origin: {},
 
     init: function() {
-        const rows = helper.getTable("Hero");
+        const rows = helper.getTable("Pet");
         PetTable._origin = rows;
     },
 

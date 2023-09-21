@@ -11,7 +11,7 @@ const ItemEquipLevelUpTable = {
         }
 
         // 장착 등급별 최대 도달 레벨
-        for (let grade in Object.keys(ItemEquipLevelUpTable._listByGrade)) {
+        for (let grade of Object.keys(ItemEquipLevelUpTable._listByGrade)) {
             let maxLevel = Math.max(...ItemEquipLevelUpTable._listByGrade[grade].map((x) => x.level));
             ItemEquipLevelUpTable._maxLevelByGrade[grade] = maxLevel;
         }

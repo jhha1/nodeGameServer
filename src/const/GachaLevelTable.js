@@ -11,7 +11,7 @@ const GachaLevelTable = {
         }
 
         // 소환별 최대 도달 레벨
-        for (let type in Object.keys(GachaLevelTable._listByGachaType)) {
+        for (let type of Object.keys(GachaLevelTable._listByGachaType)) {
             let maxLevel = Math.max(...GachaLevelTable._listByGachaType[type].map((x) => x.level));
             GachaLevelTable._maxLevelByGachaType[type] = maxLevel;
         }

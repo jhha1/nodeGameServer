@@ -118,16 +118,6 @@ async function initializeConst() {
         {id:1, stageId:1, subStageId:1, goldAmount:100},
         {id:2, stageId:1, subStageId:2, goldAmount:200}
     ];
-    CONST_TABLE["haveItemStackable"] = [
-        {id:1, kind:1, name:'gold'},
-        {id:2, kind:1, name:'dia'},
-        {id:3, kind:2, name:'heroLevelUpPiece'},
-    ];
-    CONST_TABLE["haveItemEquip"] = [
-        {id:1, kind:1, grade:1, name:'attack_item_1'},
-        {id:2, kind:1, grade:2, name:'attack_item_2'},
-        {id:3, kind:2, grade:1, name:'defence_item_1'}
-    ];
     CONST_TABLE["ItemEquipBuff"] = [
         {id:1, kind:1, grade:1, level:10, piece_count:2, ap_buff:30, hp_buff:0, cp_buff:0},
         {id:2, kind:1, grade:2, level:20, piece_count:3, ap_buff:50, hp_buff:0, cp_buff:0},
@@ -148,30 +138,59 @@ async function initializeConst() {
         {id:5, level:5, piece_cnt:10}
     ];
     CONST_TABLE["Gacha"] = [
-        {id:1, gacha_id:1, pay_item_id:2, gacha_count_1:11, gacha_count_2:35, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
-        {id:2, gacha_id:2, pay_item_id:2, gacha_count_1:11, gacha_count_2:35, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
-        {id:3, gacha_id:3, pay_item_id:2, gacha_count_1:11, gacha_count_2:35, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
+        {id:1, gacha_id:1, gacha_type: 1, pay_item_id:100001, gacha_count_1:11, pay_amount_1:500, gacha_count_2:35, pay_amount_2:1500, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
+        {id:2, gacha_id:2, gacha_type: 2, pay_item_id:100001, gacha_count_1:11, pay_amount_1:500, gacha_count_2:35, pay_amount_2:1500, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
+        {id:3, gacha_id:3, gacha_type: 3, pay_item_id:100001, gacha_count_1:11, pay_amount_1:500, gacha_count_2:35, pay_amount_2:1500, ad_gacha_count:11, ad_view_count:3, get_point:1, stage_limit:1, start_dt:'2023-08-01 10:00:00', end_dt:'2999-12-31 23:59:59'},
     ];
-    CONST_TABLE["ItemEquipLevelUp"] = [
-        {id:1, gacha_id:1, level:1, point:60, prob_id:1},
-        {id:2, gacha_id:1, level:2, point:70, prob_id:2},
-        {id:3, gacha_id:1, level:3, point:80, prob_id:3},
-        {id:4, gacha_id:1, level:4, point:90, prob_id:4},
-        {id:5, gacha_id:1, level:5, point:100, prob_id:5},
-        {id:6, gacha_id:2, level:1, point:60, prob_id:11},
+    CONST_TABLE["GachaLevel"] = [
+        {id:1, type:1, level:1, point:0},
+        {id:2, type:1, level:2, point:60},
+        {id:3, type:1, level:3, point:140},
+        {id:4, type:2, level:1, point:0},
+        {id:5, type:2, level:2, point:60},
+        {id:6, type:2, level:3, point:140},
     ];
     CONST_TABLE["GachaProb"] = [
-        {id:1, prob_id:1, grade:1, prob:5000000},
-        {id:2, gacha_id:1, grade:2, prob:2500000},
-        {id:3, gacha_id:1, grade:3, prob:1490000},
-        {id:4, gacha_id:1, grade:4, prob:9900},
-        {id:5, gacha_id:1, grade:5, prob:95},
-        {id:6, gacha_id:1, grade:6, prob:5},
+        {id:1, gacha_id:1, gacha_level:1, grade:1, prob:5000000},
+        {id:2, gacha_id:1, gacha_level:1, grade:2, prob:2500000},
+        {id:3, gacha_id:1, gacha_level:1, grade:3, prob:1500000},
+        {id:4, gacha_id:1, gacha_level:1, grade:4, prob:900000},
+        {id:5, gacha_id:1, gacha_level:1, grade:5, prob:100000},
+        {id:6, gacha_id:1, gacha_level:2, grade:1, prob:5000000},
     ];
     CONST_TABLE["KeyValues"] = [
         {id:1, key:'UserCreateCurrency', value:[[1, 1.1e-70],[2, 1.1e-71]], type:2/* array */},
         {id:2, key:'UserCreateHero', value:1, type:1 /* primitive */},
         {id:3, key:'UserCreateItem', value:[[1, 1],[3, 1]], type:2},
+    ];
+    CONST_TABLE["ItemStackble"] = [
+        {id:100001, kind:1},
+        {id:100002, kind:1},
+        {id:100003, kind:2},
+        {id:100004, kind:2},
+        {id:100005, kind:3},
+        {id:100006, kind:4},
+        {id:100007, kind:6},
+    ];
+    CONST_TABLE["ItemEquip"] = [
+        {id:200001, kind:1, grade:1},
+        {id:200002, kind:1, grade:1},
+        {id:200003, kind:1, grade:2},
+        {id:200004, kind:1, grade:3},
+        {id:200005, kind:2, grade:1},
+        {id:200006, kind:2, grade:2},
+        {id:200007, kind:2, grade:3},
+    ];
+    CONST_TABLE["ItemEquipLevelUp"] = [
+        {id:1, grade:1, level:1, piece_count:2},
+        {id:2, grade:1, level:2, piece_count:3},
+        {id:3, grade:1, level:3, piece_count:4},
+        {id:4, grade:2, level:1, piece_count:2},
+        {id:5, grade:2, level:2, piece_count:3},
+        {id:6, grade:2, level:3, piece_count:4},
+        {id:7, grade:3, level:1, piece_count:2},
+        {id:8, grade:3, level:2, piece_count:3},
+        {id:9, grade:3, level:3, piece_count:4},
     ];
     ///
 
@@ -225,7 +244,7 @@ function initializeSession(app) {
             secure: "auto",
             maxAge: ConstValues.Session.AliveTime,
         },
-        store: new RedisStore({ client: cache.Game(), prefix: 'sess:' }), // 세션 데이터를 로컬 서버 메모리가 아닌 redis db에 저장하도록 등록
+        store: new RedisStore({ client: cache.getGame(), prefix: 'sess:' }), // 세션 데이터를 로컬 서버 메모리가 아닌 redis db에 저장하도록 등록
     };
     app.use(session(sessionOption));
 }

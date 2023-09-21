@@ -18,13 +18,13 @@ const Random = {
 function mergeDuplicatedItems(itemList) {
     // 중복아이템 합산
     let merged = [];
-    let list = _.cloneDeep(itemList);
+    const list = itemList;
     for (let i = 0, k = 0; i < list.length; i++) {
-        if (merged.find((e) => e[0] === list[i][0])) continue;
-        merged[k] = list[i];
+        if (merged.find((e) => e.id === list[i].id)) continue;
+        merged[k] = _.cloneDeep(list[i]);
         for (let j = 0; j < list.length; j++) {
-            if (i !== j && list[i][0] === list[j][0]) {
-                merged[k][1] += list[j][1];
+            if (i !== j && list[i].id === list[j].id) {
+                merged[k].count += list[j].count;
             }
         }
         k++;

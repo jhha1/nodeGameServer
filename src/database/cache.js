@@ -1,6 +1,5 @@
 const redis = require('redis');
 const log = require('../utils/logger');
-const moment = require("moment");
 const ConstValues = require("../common/constValues");
 
 const RETRY_COUNT = 10;
@@ -64,15 +63,14 @@ async function connectGame(redisConfig) {
     RedisGameClient = RedisGameClient.v4;
 }
 
-function getGameRedis() {
-    return RedisGameClient;
-}
-
 async function isExpired(key) {
-    let TTL = await getGameRedis().TTL(key);
+    let TTL = await RedisGameClient.TTL(key);
     return !TTL || TTL < ConstValues.Cache.RefreshTTL;
 }
 
 exports.connect = connect;
-exports.Game = getGameRedis;
+exports.getGame = () => {
+    return RedisGameClient;
+};
 exports.isExpired = isExpired;
+
