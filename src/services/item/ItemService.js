@@ -17,7 +17,7 @@ class ItemService {
     }
 
     async getAll() {
-        return this.#itemRepositoryObject.getAll([ItemType.Stackable, ItemType.Equip]);
+        return this.#itemRepositoryObject.getAll();
     }
 
     async saveCacheOnly() {

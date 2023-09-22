@@ -35,6 +35,12 @@ const constValues = {
             Stackable: 100000,
             Equip: 200000,
         },
+        TypeName: {
+            None: "None",
+            FloatingPoint: "FloatingPoint",
+            Stackable: "Stackable",
+            Equip: "Equip",
+        },
         Stackable: {
             Gold: 100001,
             DIA: 100002,
@@ -114,7 +120,7 @@ CREATE TABLE `Equip` (
   PRIMARY KEY (`seq`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
 
-CREATE TABLE `ItemEquip` (
+CREATE TABLE `ItemEquipModel` (
   `user_id` varchar(255) COLLATE utf8mb4_bin NOT NULL,
   `item_id` int(11) NOT NULL,
   `grade` int(11) NOT NULL,

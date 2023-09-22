@@ -1,6 +1,5 @@
 const StageService = require('../services/StageService');
 const Response = require("../utils/response");
-const Protocol = require('../common/responseProtocol');
 const moment = require("moment/moment");
 const log = require("../utils/logger");
 const ConstTables = require("../const/mapper");

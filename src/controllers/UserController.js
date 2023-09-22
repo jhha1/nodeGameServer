@@ -1,16 +1,19 @@
 const LoginService = require('../services/LoginService');
-const Response = require("../utils/response");
+const UserLoginMessage = require("../protocol/schema/UserLogin");
 
-exports.LoginInfo = async (req, res, cb) => {
-
-    let response = new Response(res);
-
+exports.UserLogin = async (req, res, cb) => {
     try {
         let LoginObject = new LoginService(req);
         
         let result = await LoginObject.getLoginData();
 
-        return response.set(result);
+        let MessageObj = new UserLoginMessage();
+        MessageObj.setUser(result.User);
+        MessageObj.setItemEquip(result.ItemEquip);
+        MessageObj.setItemStackable(result.ItemStackable);
+        MessageObj.setItemFloatingPoint(result.ItemFloatingPoint);
+
+        return MessageObj;
 
     } catch (err) {
         throw err;

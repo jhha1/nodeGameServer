@@ -159,9 +159,9 @@ async function initializeConst() {
         {id:6, gacha_id:1, gacha_level:2, grade:1, prob:5000000},
     ];
     CONST_TABLE["KeyValues"] = [
-        {id:1, key:'UserCreateCurrency', value:[[1, 1.1e-70],[2, 1.1e-71]], type:2/* array */},
+        {id:1, key:'UserCreateFloatingPoint', value:[[1, 1.1e-70],[2, 1.1e-71]], type:2/* array */},
         {id:2, key:'UserCreateHero', value:1, type:1 /* primitive */},
-        {id:3, key:'UserCreateItem', value:[[1, 1],[3, 1]], type:2},
+        {id:3, key:'UserCreateItem', value:[[200001, 1],[200002, 1]], type:2},
     ];
     CONST_TABLE["ItemStackble"] = [
         {id:100001, kind:1},

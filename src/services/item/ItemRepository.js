@@ -3,6 +3,7 @@ const cache = require('../../database/cache');
 const Queries = require('../../queries/mapper');
 const ConstValues = require("../../common/constValues");
 const ItemType = require("../../common/constValues").Item.Type;
+const ItemTypeName = require("../../common/constValues").Item.TypeName;
 const Item = require("./Item");
 
 class ItemRepository {
@@ -38,17 +39,29 @@ class ItemRepository {
         }
     }
 
-    async getAll(itemTypeList) {
-        if (Array.isArray(itemTypeList)) {
+    async getAll() {
+        let result = {};
+
+        for (let itemType of Object.values(ItemType)) {
+            if (itemType === ItemType.None) continue;
+
+            result[itemType] = await this.#_getAll(itemType);
+        }
+
+        return result;
+    }
+
+    async gatAllByItemTypes(itemTypes) {
+        if (Array.isArray(itemTypes)) {
             let result = {};
-            for (let itemType of itemTypeList) {
+            for (let itemType of itemTypes) {
                 result[itemType] = await this.#_getAll(itemType);
             }
 
             return result;
         }
         else {
-            let itemType = itemTypeList;
+            let itemType = itemTypes;
             return await this.#_getAll(itemType);
         }
     }
@@ -90,7 +103,7 @@ class ItemRepository {
         }
 
         if (await cache.isExpired(this.cacheKey(itemType))) {
-            await this.#loadDB(); // 이때 캐시에 set도 하므로
+            await this.#loadDB(itemType); // 이때 캐시에 set도 하므로
         }
         else {
             let data = [];
@@ -116,10 +129,6 @@ class ItemRepository {
                 data.push(JSON.stringify(row));
             }
 
-            await cache.getGame().HSET(this.cacheKey(itemType), data);
-
-            await cache.getGame().EXPIRE(this.cacheKey(itemType), ConstValues.Cache.TTL);
-
             await Promise.all([
                 await cache.getGame().HSET(this.cacheKey(itemType), data),
                 await cache.getGame().EXPIRE(this.cacheKey(itemType), ConstValues.Cache.TTL)
@@ -136,6 +145,9 @@ class ItemRepository {
         else if (itemType === ItemType.Equip) {
             return `Item:E:${this.#userId}`;
         }
+        else if (itemType === ItemType.FloatingPoint) {
+            return `Item:F:${this.#userId}`;
+        }
     }
     selectQuery(itemType) {
         if (itemType === ItemType.Stackable) {
@@ -143,6 +155,9 @@ class ItemRepository {
         }
         else if (itemType === ItemType.Equip) {
             return Queries.ItemEquip.select;
+        }
+        else if (itemType === ItemType.FloatingPoint) {
+            return Queries.ItemDouble.select;
         }
     }
 }

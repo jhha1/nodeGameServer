@@ -3,14 +3,10 @@ const moment = require("moment");
 const ConstTables = require("../../const/mapper");
 const log = require("../../utils/logger");
 const UserRepository = require("./UserRepository");
-const ItemRepository = require("./ItemRepository");
-const db = require("../../database/db");
-const ItemType = require("../../common/constValues").Item.Type;
 
 class UserService {
 
     #UserRepositoryObject;
-    #ItemRepositoryObject;
 
     constructor(req) {
         this.req = req;
@@ -18,7 +14,6 @@ class UserService {
         this.shardId = req.session.shardId;
 
         this.#UserRepositoryObject = new UserRepository(req);
-        this.#ItemRepositoryObject = new ItemRepository(req);
     }
 
     async getUser() {
@@ -29,16 +24,14 @@ class UserService {
         }
     }
 
-    async createUser(NewAccount, platformId) {
-        const shardId = NewAccount.shard_id;
-        const userId = NewAccount.user_id;
+    createUser(shardId, userId) {
         const now = moment.utc().format('x');
 
         let heroInitData = ConstTables.KeyValues.get("UserCreateHero");
-        let itemDoubleInitData = ConstTables.KeyValues.get("UserCreateCurrency");
+        let itemFloatingPointInitData = ConstTables.KeyValues.get("UserCreateFloatingPoint");
         let itemEquipInitData = ConstTables.KeyValues.get("UserCreateItem");
 
-        if (!itemDoubleInitData || !itemEquipInitData || !heroInitData) {
+        if (!itemFloatingPointInitData || !itemEquipInitData || !heroInitData) {
             log.error(this.req, `FailedCreateNewUser. NoExist_Init_Data`);
             throw 99999;
         }
@@ -52,22 +45,23 @@ class UserService {
         }
         itemEquipQueryData = itemEquipQueryData.flatMap(data => [...data]);
 
-        let itemDoubleCacheData = itemDoubleInitData.map(row => ({user_id:userId, item_id:row[0], amount:row[1]}));
-        let itemDoubleQueryData = itemDoubleInitData.flatMap(data => [userId, ...data]);
+        let itemFloatingPointCacheData = itemFloatingPointInitData.map(row => ({user_id:userId, item_id:row[0], amount:row[1]}));
+        let itemFloatingPointQueryData = itemFloatingPointInitData.flatMap(data => [userId, ...data]);
 
         // 유저 생성시 같이 생성되어야 할 다른 디비로우도 추가
-        let executeQuery = [
-            [Queries.User.insert, [userId, shardId, '', now, now]],
-            [Queries.ItemDouble.insertMany(itemDoubleInitData.length), itemDoubleQueryData],
-            [Queries.ItemEquip.insertMany(itemEquipQueryData.length), itemEquipQueryData],
-        ]
+        // ...
 
-        await db.execute(shardId, executeQuery);
-
-        await this.#ItemRepositoryObject.setAllCacheOnly(
-            {type:ItemType.Equip, v:itemEquipCacheData},
-            {type:ItemType.FloatingPoint, v:itemDoubleCacheData}
-        );
+        return {
+            newUserQuery: [
+                [Queries.User.insert, [userId, shardId, now, now]],
+                [Queries.ItemDouble.insertMany(itemFloatingPointInitData.length), itemFloatingPointQueryData],
+                [Queries.ItemEquip.insertMany(itemEquipInitData.length), itemEquipQueryData],
+            ],
+            cacheData: {
+                itemEquip: itemEquipCacheData,
+                itemFloatingPoint: itemFloatingPointCacheData
+            }
+        };
     }
 }
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const {isMainThread, Worker, workerData, parentPort} = require("worker_threads");
 const bodyParser = require("body-parser");
-const morgan = require("morgan");
+const msgpack = require('msgpack-lite');
 const router = express.Router();
 const httpLogger = require("../utils/logger").httpLogger;
 const log = require("../utils/logger");
@@ -28,9 +28,18 @@ const initializeProcess = async() => {
         await cache.connect();
 
         // middleware
-        app.use(express.json()); 
+        app.use(bodyParser.raw({ type: 'application/msgpack' }));
         app.use(bodyParser.urlencoded({ extended: false }));
-        app.use(bodyParser.json());
+        app.use((req, res, next) => {
+            if (req.is('application/msgpack')) {
+                try {
+                    req.body = msgpack.decode(req.body);
+                } catch (error) {
+                    return next(error);
+                }
+            }
+            next();
+        });
 
         // session
         initializer.initializeSession(app);
