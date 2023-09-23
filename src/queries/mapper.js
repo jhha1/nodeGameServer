@@ -7,7 +7,7 @@ module.exports = {
     User: require("./user"),
     ItemDouble: require("./itemDouble"),
     ItemEquip: require("./itemEquip"),
-    ItemStackable: require("./ItemStackable"),
+    ItemStackable: require("./itemStackable"),
     Equip: require("./equip"),
     Stage: require("./stage"),
     GachaLevel: require("./gachaLevel"),
