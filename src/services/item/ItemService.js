@@ -1,6 +1,6 @@
 const ItemEquip = require('./ItemEquip');
 const ItemStackable = require("./ItemStackable");
-const itemRepository = require("./itemRepository");
+const itemRepository = require("./ItemRepository");
 const ItemType = require("../../common/constValues").Item.Type;
 
 class ItemService {
