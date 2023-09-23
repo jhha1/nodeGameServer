@@ -81,6 +81,7 @@ class AccountService {
 
         await this.#ItemRepositoryObject.setAllCacheOnly([
             {type:ItemType.Equip, v:cacheData.itemEquip},
+            {type:ItemType.Stackable, v:cacheData.itemStackable},
             {type:ItemType.FloatingPoint, v:cacheData.itemFloatingPoint}
         ]);
 

@@ -12,40 +12,41 @@ class UserLogin {
     }
 
     setUser(obj) {
-        this.user = new UserModel();
-        this.user.setUserId(obj.user_id);
-        this.user.setNickname(obj.nickname);
-        this.user.setIsLeave(obj.is_leave);
-        this.user.setLastLoginDt(obj.last_login_dt);
-        this.user.setCreatedDt(obj.created_dt);
+        let model = new UserModel();
+        model.setUserId(obj.user_id);
+        model.setNickname(obj.nickname);
+        model.setIsLeave(obj.is_leave);
+        model.setLastLoginDt(obj.last_login_dt);
+        model.setCreatedDt(obj.created_dt);
+        this.user = model.get();
     }
 
     setItemEquip(list) {
         for (let obj of list) {
-            let row = new ItemEquipModel();
-            row.setItemId(obj.item_id);
-            row.setGrade(obj.grade);
-            row.setLevel(obj.level);
-            row.setPieceCount(obj.piece_count);
-            this.item_equip_list.push(row);
+            let model = new ItemEquipModel();
+            model.setItemId(obj.item_id);
+            model.setGrade(obj.grade);
+            model.setLevel(obj.level);
+            model.setPieceCount(obj.piece_count);
+            this.item_equip_list.push(model.get());
         }
     }
 
     setItemStackable(list) {
         for (let obj of list) {
-            let row = new ItemStackableModel();
-            row.setItemId(obj.item_id);
-            row.setCount(obj.count);
-            this.item_stackable_list.push(row);
+            let model = new ItemStackableModel();
+            model.setItemId(obj.item_id);
+            model.setCount(obj.count);
+            this.item_stackable_list.push(model.get());
         }
     }
 
     setItemFloatingPoint(list) {
         for (let obj of list) {
-            let row = new ItemFloatingPointModel();
-            row.setItemId(obj.item_id);
-            row.setAmount(obj.amount);
-            this.item_floating_point_list.push(row);
+            let model = new ItemFloatingPointModel();
+            model.setItemId(obj.item_id);
+            model.setAmount(obj.amount);
+            this.item_floating_point_list.push(model.get());
         }
     }
 

@@ -28,13 +28,13 @@ class AccountLogin {
     }
 
     get() {
-        return {
-            platform_type:this.platform_type,
-            platform_id:this.platform_id,
-            user_id:this.user_id,
-            device_type:this.device_type,
-            is_leave:this.is_leave
-        };
+        return [
+            this.platform_type,
+            this.platform_id,
+            this.user_id,
+            this.device_type,
+            this.is_leave
+        ];
     }
 }
 

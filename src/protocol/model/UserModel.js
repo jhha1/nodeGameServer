@@ -28,13 +28,13 @@ class UserModel {
     }
 
     get() {
-        return {
-            user_id:this.user_id,
-            nickname:this.nickname,
-            is_leave:this.is_leave,
-            last_login_dt:this.last_login_dt,
-            created_dt:this.created_dt
-        };
+        return [
+            this.user_id,
+            this.nickname,
+            this.is_leave,
+            this.last_login_dt,
+            this.created_dt
+        ];
     }
 }
 

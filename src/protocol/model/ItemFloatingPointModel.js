@@ -13,10 +13,10 @@ class ItemFloatingPointModel {
     }
 
     get() {
-        return {
-            item_id:this.item_id,
-            amount:this.amount,
-        };
+        return [
+            this.item_id,
+            this.amount,
+        ];
     }
 }
 

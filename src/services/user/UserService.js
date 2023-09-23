@@ -28,12 +28,22 @@ class UserService {
         const now = moment.utc().format('x');
 
         let heroInitData = ConstTables.KeyValues.get("UserCreateHero");
-        let itemFloatingPointInitData = ConstTables.KeyValues.get("UserCreateFloatingPoint");
-        let itemEquipInitData = ConstTables.KeyValues.get("UserCreateItem");
+        let itemFloatingPointInitData = ConstTables.KeyValues.get("UserCreateItemFloatingPoint");
+        let itemStackableInitData = ConstTables.KeyValues.get("UserCreateItemStackable");
+        let itemEquipInitData = ConstTables.KeyValues.get("UserCreateItemEquip");
 
-        if (!itemFloatingPointInitData || !itemEquipInitData || !heroInitData) {
-            log.error(this.req, `FailedCreateNewUser. NoExist_Init_Data`);
-            throw 99999;
+        let itemFloatingPointCacheData = [];
+        let itemFloatingPointQueryData = [];
+        if (itemFloatingPointInitData) {
+            itemFloatingPointCacheData = itemFloatingPointInitData.map(row => ({user_id:userId, item_id:row[0], amount:row[1]}));
+            itemFloatingPointQueryData = itemFloatingPointInitData.flatMap(data => [userId, ...data]);
+        }
+
+        let itemStackableCacheData = [];
+        let itemStackableQueryData = [];
+        if (itemStackableInitData) {
+            itemStackableCacheData = itemStackableInitData.map(row => ({user_id:userId, item_id:row[0], count:row[1]}));
+            itemStackableQueryData = itemStackableInitData.flatMap(data => [userId, ...data]);
         }
 
         let itemEquipCacheData = [];
@@ -45,22 +55,22 @@ class UserService {
         }
         itemEquipQueryData = itemEquipQueryData.flatMap(data => [...data]);
 
-        let itemFloatingPointCacheData = itemFloatingPointInitData.map(row => ({user_id:userId, item_id:row[0], amount:row[1]}));
-        let itemFloatingPointQueryData = itemFloatingPointInitData.flatMap(data => [userId, ...data]);
-
         // 유저 생성시 같이 생성되어야 할 다른 디비로우도 추가
         // ...
 
+        let newUserQuery = [[Queries.User.insert, [userId, shardId, now, now]]];
+        if (itemFloatingPointInitData.length > 0) newUserQuery.push([Queries.ItemDouble.insertMany(itemFloatingPointInitData.length), itemFloatingPointQueryData]);
+        if (itemStackableCacheData.length > 0) newUserQuery.push([Queries.ItemStackable.insertMany(itemStackableInitData.length), itemStackableQueryData]);
+        if (itemEquipInitData.length > 0) newUserQuery.push([Queries.ItemEquip.insertMany(itemEquipInitData.length), itemEquipQueryData]);
+
+        let cacheData = {};
+        if (itemFloatingPointInitData.length > 0) cacheData["itemFloatingPoint"] = itemFloatingPointCacheData;
+        if (itemStackableCacheData.length > 0) cacheData["itemStackable"] = itemStackableCacheData;
+        if (itemEquipInitData.length > 0) cacheData["itemEquip"] = itemEquipCacheData;
+
         return {
-            newUserQuery: [
-                [Queries.User.insert, [userId, shardId, now, now]],
-                [Queries.ItemDouble.insertMany(itemFloatingPointInitData.length), itemFloatingPointQueryData],
-                [Queries.ItemEquip.insertMany(itemEquipInitData.length), itemEquipQueryData],
-            ],
-            cacheData: {
-                itemEquip: itemEquipCacheData,
-                itemFloatingPoint: itemFloatingPointCacheData
-            }
+            newUserQuery,
+            cacheData
         };
     }
 }
