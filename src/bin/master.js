@@ -1,7 +1,7 @@
 const express = require('express');
 const {isMainThread, Worker, workerData, parentPort} = require("worker_threads");
 const bodyParser = require("body-parser");
-const msgpack = require('msgpack-lite');
+const msgpack = require('@ygoe/msgpack');
 const router = express.Router();
 const httpLogger = require("../utils/logger").httpLogger;
 const log = require("../utils/logger");
@@ -33,7 +33,7 @@ const initializeProcess = async() => {
         app.use((req, res, next) => {
             if (req.is('application/msgpack')) {
                 try {
-                    req.body = msgpack.decode(req.body);
+                    req.body = msgpack.deserialize(req.body);
                 } catch (error) {
                     return next(error);
                 }

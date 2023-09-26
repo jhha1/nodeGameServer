@@ -8,7 +8,7 @@ const User = {
   created_dt: Integer
 };
 
-const ItemEquipModel = {
+const ItemEquip = {
   item_id: Integer,
   grade: Integer,
   level: Integer,

@@ -1,4 +1,4 @@
-class ItemEquipModel {
+class ItemEquip {
     constructor() {
         this.item_id = 0;
         this.grade = 0;
@@ -32,4 +32,4 @@ class ItemEquipModel {
     }
 }
 
-module.exports = ItemEquipModel;
+module.exports = ItemEquip;

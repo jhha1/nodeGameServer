@@ -1,5 +1,5 @@
 const LoginService = require('../services/LoginService');
-const UserLoginMessage = require("../protocol/schema/UserLogin");
+const msg = require("../protocol/GF_ResProtocol_1");
 
 exports.UserLogin = async (req, res, cb) => {
     try {
@@ -7,11 +7,7 @@ exports.UserLogin = async (req, res, cb) => {
         
         let result = await LoginObject.getLoginData();
 
-        let MessageObj = new UserLoginMessage();
-        MessageObj.setUser(result.User);
-        MessageObj.setItemEquip(result.ItemEquip);
-        MessageObj.setItemStackable(result.ItemStackable);
-        MessageObj.setItemFloatingPoint(result.ItemFloatingPoint);
+        let MessageObj = new msg.UserLogin(result.User, result.ItemEquip, result.ItemStackable, result.ItemFloatingPoint);
 
         return MessageObj;
 

@@ -1,4 +1,4 @@
-const msgpack = require('msgpack-lite');
+const msgpack = require('@ygoe/msgpack');
 const log = require('./logger');
 
 class response {
@@ -9,8 +9,8 @@ class response {
     }
 
     send (messageObj) {
-        const data = messageObj.get();
-        const encoded = msgpack.encode(data);
+        const encoded = msgpack.serialize(messageObj);
+        let a = msgpack.deserialize(encoded);
         return this.#res.send(encoded);
     }
 

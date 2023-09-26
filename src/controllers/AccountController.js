@@ -1,7 +1,7 @@
 const AccountService = require('../services/AccountService');
 const UserService = require("../services/user/UserService");
 const session = require("../database/session");
-const AccountLoginMessage = require("../protocol/schema/AccountLogin");
+const msg = require("../protocol/GF_ResProtocol_1");
 
 exports.AccountLogin = async (req, res, cb) => {
     try {
@@ -22,12 +22,8 @@ exports.AccountLogin = async (req, res, cb) => {
 
         await session.init(req, AccountRow);
 
-        const messageObj = new AccountLoginMessage();
-        messageObj.setPlatformType(AccountRow.platform_type);
-        messageObj.setPlatformId(AccountRow.platform_id);
-        messageObj.setUserId(AccountRow.user_id);
-        messageObj.setDeviceType(AccountRow.device_type);
-        messageObj.setIsLeave(AccountRow.is_leave);
+        const messageObj = new msg.AccountLogin(AccountRow.platform_type,
+            AccountRow.platform_id, AccountRow.user_id, AccountRow.device_type, AccountRow.is_leave);
 
         return messageObj;
 
