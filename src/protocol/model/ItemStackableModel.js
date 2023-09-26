@@ -13,10 +13,10 @@ class ItemStackableModel {
     }
 
     get() {
-        return {
-            item_id:this.item_id,
-            count:this.count,
-        };
+        return [
+            this.item_id,
+            this.count,
+        ];
     }
 }
 

@@ -23,12 +23,12 @@ class ItemEquip {
     }
 
     get() {
-        return {
-            item_id:this.item_id,
-            grade:this.grade,
-            level:this.level,
-            piece_count:this.piece_count
-        };
+        return [
+            this.item_id,
+            this.grade,
+            this.level,
+            this.piece_count
+        ];
     }
 }
 

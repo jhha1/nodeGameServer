@@ -84,7 +84,8 @@ class ItemRepository {
     async setAllCacheOnly(data) {
         if (!data || !Array.isArray(data)) {
             console.error(this.#req, `FailedSaveCache. NoData or InvalidFormat. ${data}`);
-            throw 999999;
+            // throw 999999;
+            return;
         }
 
         for (let d of data) {
@@ -102,17 +103,18 @@ class ItemRepository {
             return;
         }
 
-        if (await cache.isExpired(this.cacheKey(itemType))) {
-            await this.#loadDB(itemType); // 이때 캐시에 set도 하므로
-        }
-        else {
+        //if (await cache.isExpired(this.cacheKey(itemType))) {
+        //    await this.#loadDB(itemType); // 이때 캐시에 set도 하므로
+        //}
+        //else {
             let data = [];
             for (let row of updateCashValues) {
                 data.push(String(row.item_id));
                 data.push(JSON.stringify(row));
             }
             await cache.getGame().HSET(this.cacheKey(itemType), data);
-        }
+            await cache.getGame().EXPIRE(this.cacheKey(itemType), ConstValues.Cache.TTL);
+        //}
     }
 
     async #loadDB(itemType) {
