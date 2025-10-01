@@ -3,7 +3,7 @@
 <div>
   <h3>간단 프레임워크</h3>
 <ul>
-  <li>https (Expreess) + msgpack - http body에 msgpack 기반 binery 직렬화/역직렬화</li>  
+  <li>https (Expreess) + msgPack - http body에 msgPack 기반 binery 직렬화/역직렬화</li>  
   <li>RDB, Redis Cache, Session 구현</li>   
   <li>AWS (S3), Google (spread sheet 기획데이터) 연동</li>
   <li>API 요청에 대한 프레임워크 처리구조 구현 - route, pre/post process, 응답 및 error 핸들링 등</li>
