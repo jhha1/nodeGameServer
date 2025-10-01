@@ -18,8 +18,7 @@
 <h3>기획데이터 설계</h3>
 <ul>
   <li>구글 스프레드시트에 직접 설계, 게임서버 연동하여 data load</li>
-  <li>기획데이터 설계 일부</li>
-  <img src="https://drive.google.com/file/d/1ASOPEHYKfMVJVLfh3XNFAj5XGwXhX0QM/view?usp=drive_link" />
+  <li>(https://github.com/user-attachments/assets/3fc5fd35-e5ff-408b-b87d-86637b1f3c9d.png)<li/>
 </ul>
 </div>
 
