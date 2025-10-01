@@ -1,7 +1,7 @@
 # Node.js 기반 Restful API 게임 서버 (개인프로젝트)
 
 <div>
-  <h3>간단 프레임워크 (구현 중)</h3>
+  <h3>간단 프레임워크</h3>
 <ul>
   <li>https (Expreess) + msgpack - http body에 msgpack 기반 binery 직렬화/역직렬화</li>  
   <li>RDB, Redis Cache, Session 구현</li>   
